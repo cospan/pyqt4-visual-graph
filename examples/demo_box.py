@@ -1,6 +1,8 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, "visual_graph"))
+
 from box import Box
 import graphics_utils as gu
 
@@ -30,6 +32,9 @@ class DemoBox(Box):
         md["color"] = "color"
         md["data"] = parameters
         md["move_type"] = "move"
+        md["type"] = "demo"
+        js = json.dumps(md)
+        self.slave_data = js
         self.setAcceptDrops(True)
         self.sdbg = False
 
@@ -75,10 +80,15 @@ class DemoBox(Box):
             else:
                 self.dragging = True
                 self.hide()
+                if self.sdbg: print "SLAVE.%s: startDrag: %s" % (inspect.getframeinfo(inspect.currentframe()).function, self.box_name)
+                mime_data = QMimeData()
+                mime_data.setData("application/flowchart-data", self.slave_data)
+                
                
                 #Create and dispatch a move event
                 drag = QDrag(event.widget())
                 drag.start(Qt.MoveAction)
+                drag.setMimeData(mime_data)
                 #drag.start(Qt.MoveAction)
                 
                 #create an image for the drag
